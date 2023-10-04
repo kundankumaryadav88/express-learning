@@ -12,6 +12,7 @@ import { Register } from './Controllers/User.js';
 import tasks from './data/tasks.js';
 import Task from './models/Task.js';
 import winston from 'winston';
+import * as Sentry from '@sentry/node'; // Import Sentry
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -22,6 +23,13 @@ const corsOrigin = {
 };
 const app = express();
 
+// Configure Sentry
+Sentry.init({
+  dsn: 'https://fcc9073b8e6bb57164fbe754559a2bfa@o4505987029598208.ingest.sentry.io/4505987032088576', // Replace with your actual Sentry DSN
+  // You can configure more options here if needed
+  
+});
+
 const logger = winston.createLogger({
     transports: [
         new winston.transports.Console(),
@@ -29,6 +37,7 @@ const logger = winston.createLogger({
     ],
 });
 
+app.use(Sentry.Handlers.requestHandler()); // Add Sentry's request handler middleware
 app.use(express.json());
 app.use(cors(corsOrigin));
 app.use(cookieParser());
@@ -78,3 +87,5 @@ app.use('/task', TaskRoutes);
 app.get('/', (req, res) => {
     res.send('Server Hosted');
 });
+
+app.use(Sentry.Handlers.errorHandler()); // Add Sentry's error handler middleware
